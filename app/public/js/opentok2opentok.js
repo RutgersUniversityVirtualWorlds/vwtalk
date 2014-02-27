@@ -1,12 +1,12 @@
 //Vivox functions that could be called by or have been called from unity web player
 var prevRoom = '';
 var session;
-var world = "001";
+var world = '001';
 $(document).ready(function() {
   $.ajax({
     dataType: 'json',
     url: '/api/' + world + '/' + user + '/' + room,
-    success: function (data) {
+    success: function(data) {
       //copy the data for later use
       globaldata = $.extend({}, data);
       sessions = data.sessions;
@@ -20,12 +20,12 @@ $(document).ready(function() {
         sessions[key].addEventListener('connectionDestroyed', connectionDestroyedHandler);
         sessions[key].addEventListener('streamDestroyed', streamDestroyedHandler);
       }
-      console.log("Joining:" + room);
+      console.log('Joining:' + room);
     }
   });
 });
 function initUser(player) {
-  console.log("intiUser: Start");
+  console.log('intiUser: Start');
   user = player;
   sessions[room].connect(globaldata.apikey, globaldata.tokens[room]);
   $('#rooms').text('Room: ' + room);
@@ -37,7 +37,7 @@ function initUser(player) {
     width: 1,
     name: user
   };
-  publisher = TB.initPublisher(globaldata.apikey, "publisherContainer", pubOptions);
+  publisher = TB.initPublisher(globaldata.apikey, 'publisherContainer', pubOptions);
   console.log('OpenTOK url: ' + '/api/' + '001/' + user + '/' + currentRoom);
   console.log('initUser End: ' + player);
 }

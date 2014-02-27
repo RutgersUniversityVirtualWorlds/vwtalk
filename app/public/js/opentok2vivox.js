@@ -1,12 +1,12 @@
 //Vivox functions that could be called by or have been called from unity web player
 var prevRoom = '';
 var session;
-var world='001';
+var world = '001';
 $(document).ready(function() {
   $.ajax({
     dataType: 'json',
     url: '/api/' + world + '/' + user + '/' + room,
-    success: function (data) {
+    success: function(data) {
       //copy the data for later use
       globaldata = $.extend({}, data);
       sessions = data.sessions;
@@ -20,19 +20,19 @@ $(document).ready(function() {
         sessions[key].on('connectionDestroyed', connectionDestroyedHandler);
         sessions[key].on('streamDestroyed', streamDestroyedHandler);
       }
-      console.log("Joining:" + room);
+      console.log('Joining:' + room);
     }
   });
 });
 function VivoxUnityInit() {
-	console.log("VivoxUnityInit: Start");
-	GetUnity().SendMessage("VivoxHud", "VivoxJoinedRoom", "");
-	GetUnity().SendMessage("VivoxHud", "onVivoxConnected", "Connected to Vivox network!");
-	console.log("VivoxUnityInit: End");
+	console.log('VivoxUnityInit: Start');
+	GetUnity().SendMessage('VivoxHud', 'VivoxJoinedRoom', '');
+	GetUnity().SendMessage('VivoxHud', 'onVivoxConnected', 'Connected to Vivox network!');
+	console.log('VivoxUnityInit: End');
 }
 function VivoxLogin(player) {
-  console.log("VivoxLogin: Start");
-  user = player;	
+  console.log('VivoxLogin: Start');
+  user = player;
   sessions[room].connect(globaldata.apikey, globaldata.tokens[room]);
   $('#rooms').text('Room: ' + room);
   //set publishing options
@@ -43,7 +43,7 @@ function VivoxLogin(player) {
     width: 1,
     name: user
   };
-  publisher = TB.initPublisher(globaldata.apikey, "publisherContainer", pubOptions);
+  publisher = TB.initPublisher(globaldata.apikey, 'publisherContainer', pubOptions);
   publisher.on('streamDestroyed', function(evt) {
     evt.preventDefault();
   });
@@ -121,7 +121,7 @@ function vivoxCompletedLogout(Response) {
 //mute myself
 function VivoxMicMute(mute) {
   console.log('VivoxMicMute: ' + mute);
-  if(mute=="True") toggleAudio(false);
+  if (mute == 'True') toggleAudio(false);
   else toggleAudio(true);
 }
 function vivoxMicMuteResult(response) {
@@ -137,7 +137,7 @@ function vivoxConnected(Event) {
 function HandleMuting(isMuted) {
   console.log('HandleMuting: ' + isMuted);
   $('audio, video').each(function() {
-    if(isMuted) {
+    if (isMuted) {
       $(this).pause();
     }
     else {

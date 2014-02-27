@@ -7,7 +7,7 @@ var config = require('./config');
 console.log('PORT: ' + config.port + ' HOST: ' + config.host);
 var app = express();
 // Configuration
-app.configure(function () {
+app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.set('view options', { layout: false });
@@ -42,24 +42,24 @@ for (ii = 0; ii < world.roomCount; ii++) {
 }
 for (var key in sessions) {
   console.log('key: ' + key);
-  opentokAPP.createSession(location, { 'p2p.preference': 'disabled' }, function (aKey) {
-    return function (result) {
+  opentokAPP.createSession(location, { 'p2p.preference': 'disabled' }, function(aKey) {
+    return function(result) {
       sessions[aKey.toString()].sessionId = result;
       console.log('sessions[' + aKey.toString() + '].sessionId: ', sessions[aKey].sessionId);
     };
   }(key));
 }
-app.configure('development', function () {
+app.configure('development', function() {
   app.use(express.errorHandler({
     dumpExceptions: true,
     showStack: true
   }));
 });
-app.configure('production', function () {
+app.configure('production', function() {
   app.use(express.errorHandler());
 });
 // Routes
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
   res.redirect('/Negotiation');
   console.log('Sessions: %j', sessions);
   res.render('index', {
@@ -68,7 +68,7 @@ app.get('/', function (req, res) {
   });
 });
 app.get('/support', routes.support);
-app.get('/api/:world/:user/:room', function (req, res) {
+app.get('/api/:world/:user/:room', function(req, res) {
   //This selects the world, the user, and starter room
   var data = {};
   data.user = req.params.user;
@@ -90,6 +90,6 @@ app.get('/api/:world/:user/:room', function (req, res) {
   console.log('data: %j', data);
   res.json(data);
 });
-app.listen(config.port, function () {
+app.listen(config.port, function() {
   console.log('opentok app running: ' + config.port);
 });
