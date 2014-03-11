@@ -1,7 +1,6 @@
 //Vivox functions that could be called by or have been called from unity web player
 var prevRoom = '';
 var session;
-var world = '001';
 $(document).ready(function() {
   $.ajax({
     dataType: 'json',

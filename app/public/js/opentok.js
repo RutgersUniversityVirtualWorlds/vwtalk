@@ -1,5 +1,3 @@
-var currentRoom;
-var room = 'middle';
 var user;
 var sessions = {};
 var globaldata = {};
