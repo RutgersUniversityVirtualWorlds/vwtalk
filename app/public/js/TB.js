@@ -13672,7 +13672,7 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
         _prevStats,
         _state,
 	_audioContext,
-	_audioBuffer;
+	_audioAnalyser;
 
     _validResolutions = {
       '320x240': {width: 320, height: 240},
@@ -13805,12 +13805,10 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
           _container.video = _targetElement;
 
 	  _audioContext = new webkitAudioContext();
-	  micActivityDetector = _audioContext.createJavaScriptNode(256,1,1);
-	  micActivityDetector.connect(_audioContext.destination);
-	  micActivityDetector.onaudioprocess = function(e) {
-	    _buffer = e.inputBuffer.getChannelData(0);
-	  }
-	  _audioContext.createMediaStreamSource(webOTStream).connect(micActivityDetector);
+	  _audioAnalyser = _audioContext.createAnalyser();
+	  _audioAnalyser.fftSize = 256;
+	  _audioAnalyser.connect(_audioContext.destination);
+	  _audioContext.createMediaStreamSource(webOTStream).connect(_audioAnalyser);
         },
 
         onStreamAvailableError = function(error) {
@@ -14508,11 +14506,13 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
     };
 
     this.detectMicActivity = function() {
-      var sum=0;
-      for(var i=0; i<_buffer.length; i++) {
-	  sum += _buffer[i];
-      }
-      return sum/_buffer.length;
+	var currentWaveform= new Uint8Array(256);
+       _audioAnalyser.getByteFrequencyData(currentWaveform);
+	var sum = 0;
+	for(var i=0; i<currentWaveform.length; i++) {
+	  sum+=currentWaveform[i];
+	}
+	return sum/currentWaveform.length;
     };
 
     this.getEchoCancellationMode = function() {
@@ -14725,7 +14725,9 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
         _state,
         _subscribeAudioFalseWorkaround, // OPENTOK-6844
         _prevStats,
-        _lastSubscribeToVideoReason;
+        _lastSubscribeToVideoReason,
+	_audioContext,
+	_audioAnalyser;
 
     _prevStats = {
       timeStamp: OT.$.now()
@@ -14917,6 +14919,39 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 
           logAnalyticsEvent('createPeerConnection', 'StreamAdded', '', '');
           this.trigger('streamAdded', this);
+	  if(!window.webkitAudioContext) window.webkitAudioContext = AudioContext;
+	  _audioContext = new webkitAudioContext();
+	  _audioAnalyser = _audioContext.createAnalyser();
+	  _audioAnalyser.fftSize = 256;
+	  _audioAnalyser.connect(_audioContext.destination);
+	  _audioContext.createMediaStreamSource(webOTStream).connect(_audioAnalyser);
+	   var minSFMThresh = 255;
+	  var intervalId = setInterval(function() { 
+	   if(!_streamContainer) clearInterval(intervalId);
+	   var currentWaveform= new Uint8Array(2048);
+           _audioAnalyser.getByteFrequencyData(currentWaveform);
+	   var arithMean = 0;
+	   var geoMean = 1;
+	   for(var i=0; i<currentWaveform.length; i++) {
+	    arithMean+=currentWaveform[i];
+	    if(currentWaveform[i]!=0)geoMean*=currentWaveform[i];
+	   }
+	   arithMean = arithMean/currentWaveform.length;
+	   geoMean = Math.pow(geoMean, 1/currentWaveform.length);
+	   var SFM = Math.log(geoMean/arithMean)/Math.log(10);
+	   if(SFM<-.5) {
+	     if(minSFMThresh>geoMean) minSFMThresh = geoMean;
+	     _streamContainer.parentElement.style.backgroundColor="green";
+	   }
+	   else {
+	     if(geoMean>minSFMThresh){
+	        _streamContainer.parentElement.style.backgroundColor="green";
+	     } else {
+	       _streamContainer.parentElement.style.backgroundColor="black";
+	     }
+	   }
+	}, 25);
+	
         },
 
         onRemoteStreamRemoved = function(webOTStream) {
@@ -14929,6 +14964,7 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 
 
           this.trigger('streamRemoved', this);
+
         },
 
         streamDestroyed = function () {
