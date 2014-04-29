@@ -6,6 +6,8 @@
  *
  * Date: March 27 05:49:25 2014
  */
+if(!window.webkitAudioContext) window.webkitAudioContext = AudioContext;
+_audioContext = new webkitAudioContext();
 
 (function(window) {
   if (!window.OT) window.OT = {};
@@ -14719,7 +14721,6 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
         _subscribeAudioFalseWorkaround, // OPENTOK-6844
         _prevStats,
         _lastSubscribeToVideoReason,
-	_audioContext,
 	_audioAnalyser;
 
     _prevStats = {
@@ -14912,15 +14913,16 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 
           logAnalyticsEvent('createPeerConnection', 'StreamAdded', '', '');
           this.trigger('streamAdded', this);
-	  if(!window.webkitAudioContext) window.webkitAudioContext = AudioContext;
-	  _audioContext = new webkitAudioContext();
 	  _audioAnalyser = _audioContext.createAnalyser();
 	  _audioAnalyser.fftSize = 256;
 	  _audioContext.createMediaStreamSource(webOTStream).connect(_audioAnalyser);
 	  var minSFMThresh = 255;
 	  var isTalking = 0;
 	  var intervalId = setInterval(function() { 
-	   if(!_streamContainer) clearInterval(intervalId);
+	   if(!_streamContainer) {
+	     clearInterval(intervalId);
+	     return;
+	   }
 	   var currentWaveform= new Uint8Array(2048);
            _audioAnalyser.getByteFrequencyData(currentWaveform);
 	   var arithMean = 0;
@@ -14933,13 +14935,7 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 	   geoMean = Math.pow(geoMean, 1/currentWaveform.length);
 	   var SFM = Math.log(geoMean/arithMean)/Math.log(10);
 	   if(SFM<-.5) {
-	   //  if(minSFMThresh>geoMean) minSFMThresh = geoMean;
-	   //  _streamContainer.parentElement.style.backgroundColor="green";
 	       isTalking=40;
-	   }
-	   else if(geoMean>minSFMThresh){
-	   //     _streamContainer.parentElement.style.backgroundColor="green";
-	   // }
 	   }
 	   if(isTalking>0) {
 	     isTalking--;
