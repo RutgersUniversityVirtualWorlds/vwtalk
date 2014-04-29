@@ -13670,9 +13670,7 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
         _validFrameRates = [ 1, 7, 15, 30 ],
         _qosIntervals = {},
         _prevStats,
-        _state,
-	_audioContext,
-	_audioAnalyser;
+        _state;
 
     _validResolutions = {
       '320x240': {width: 320, height: 240},
@@ -13804,11 +13802,6 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 
           _container.video = _targetElement;
 
-	  _audioContext = new webkitAudioContext();
-	  _audioAnalyser = _audioContext.createAnalyser();
-	  _audioAnalyser.fftSize = 256;
-	  _audioAnalyser.connect(_audioContext.destination);
-	  _audioContext.createMediaStreamSource(webOTStream).connect(_audioAnalyser);
         },
 
         onStreamAvailableError = function(error) {
@@ -14923,9 +14916,9 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 	  _audioContext = new webkitAudioContext();
 	  _audioAnalyser = _audioContext.createAnalyser();
 	  _audioAnalyser.fftSize = 256;
-	  _audioAnalyser.connect(_audioContext.destination);
 	  _audioContext.createMediaStreamSource(webOTStream).connect(_audioAnalyser);
-	   var minSFMThresh = 255;
+	  var minSFMThresh = 255;
+	  var isTalking = 0;
 	  var intervalId = setInterval(function() { 
 	   if(!_streamContainer) clearInterval(intervalId);
 	   var currentWaveform= new Uint8Array(2048);
@@ -14940,18 +14933,21 @@ OTHelpers.makeVisibleAndYield = function(element, callback) {
 	   geoMean = Math.pow(geoMean, 1/currentWaveform.length);
 	   var SFM = Math.log(geoMean/arithMean)/Math.log(10);
 	   if(SFM<-.5) {
-	     if(minSFMThresh>geoMean) minSFMThresh = geoMean;
-	     _streamContainer.parentElement.style.backgroundColor="green";
+	   //  if(minSFMThresh>geoMean) minSFMThresh = geoMean;
+	   //  _streamContainer.parentElement.style.backgroundColor="green";
+	       isTalking=40;
 	   }
-	   else {
-	     if(geoMean>minSFMThresh){
-	        _streamContainer.parentElement.style.backgroundColor="green";
-	     } else {
-	       _streamContainer.parentElement.style.backgroundColor="black";
-	     }
+	   else if(geoMean>minSFMThresh){
+	   //     _streamContainer.parentElement.style.backgroundColor="green";
+	   // }
+	   }
+	   if(isTalking>0) {
+	     isTalking--;
+	     _streamContainer.parentElement.style.backgroundColor="green";
+	   } else {
+	     _streamContainer.parentElement.style.backgroundColor="black";
 	   }
 	}, 25);
-	
         },
 
         onRemoteStreamRemoved = function(webOTStream) {
