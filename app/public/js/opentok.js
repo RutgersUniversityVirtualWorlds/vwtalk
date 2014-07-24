@@ -12,7 +12,7 @@ TB.setLogLevel(TB.INFO);
 function subscribeToStreams(streams) {
   console.log('subscribeToStreams');
   for (var ii = 0; ii < streams.length; ii++) {
-    console.log('stream ii: ' + streams.length + ', StreamName: ' + streams[ii].name);
+    console.log(streams[ii]);
     // Make sure we don't subscribe to ourself
     // Create the div to put the subscriber element in to
     var div = document.createElement('div');
